@@ -36,9 +36,10 @@
 	{ "name": "t¹ 🐞 bug", "color": "#F44336" },
 	{ "name": "t² 📚 documentation", "color": "#FDD835" },
 	{ "name": "t³ ✨ enhancement", "color": "#03a9f4" },
-	{ "name": "t⁴ ⋅ regression", "color": "#0052cc" },
-	{ "name": "t⁵ ⋅ todo", "color": "#311B92" },
-	{ "name": "t⁶ ⋅ waiting on upstream", "color": "#0D47A1" },
+	{ "name": "t⁴ 🔌 plugin api", "color": "#e6ee9c" },
+	{ "name": "t⁵ ⋅ regression", "color": "#0052cc" },
+	{ "name": "t⁶ ⋅ todo", "color": "#311B92" },
+	{ "name": "t⁷ ⋅ waiting on upstream", "color": "#0D47A1" },
 
 	{ "name": "v¹ ⋅ major", "color": "#CDDC39" },
 	{ "name": "v² ⋅ minor", "color": "#FF9800" },
