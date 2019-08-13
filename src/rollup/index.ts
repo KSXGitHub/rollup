@@ -38,7 +38,7 @@ function checkOutputOptions(options: OutputOptions) {
 		);
 	}
 
-	if (['amd', 'cjs', 'system', 'es', 'iife', 'umd'].indexOf(options.format as string) < 0) {
+	if (['amd', 'cjs', 'system', 'es', 'iife', 'umd'].indexOf(options.format!) < 0) {
 		error({
 			message: `You must specify "output.format", which can be one of "amd", "cjs", "system", "esm", "iife" or "umd".`,
 			url: `https://rollupjs.org/guide/en/#output-format`
@@ -155,7 +155,7 @@ function assignChunksToBundle(
 		const chunk = chunks[i];
 		const facadeModule = chunk.facadeModule;
 
-		outputBundle[chunk.id as string] = {
+		outputBundle[chunk.id!] = {
 			code: undefined as any,
 			dynamicImports: chunk.getDynamicImportIds(),
 			exports: chunk.getExportNames(),
@@ -193,9 +193,9 @@ export default async function rollup(rawInputOptions: GenericConfigObject): Prom
 	try {
 		await graph.pluginDriver.hookParallel('buildStart', [inputOptions]);
 		chunks = await graph.build(
-			inputOptions.input as string | string[] | Record<string, string>,
+			inputOptions.input!,
 			inputOptions.manualChunks,
-			inputOptions.inlineDynamicImports as boolean
+			inputOptions.inlineDynamicImports!
 		);
 	} catch (err) {
 		await graph.pluginDriver.hookParallel('buildEnd', [err]);
@@ -239,7 +239,7 @@ export default async function rollup(rawInputOptions: GenericConfigObject): Prom
 				chunk.preRender(outputOptions, inputBase);
 			}
 			if (!optimized && inputOptions.experimentalOptimizeChunks) {
-				optimizeChunks(chunks, outputOptions, inputOptions.chunkGroupingSize as number, inputBase);
+				optimizeChunks(chunks, outputOptions, inputOptions.chunkGroupingSize!, inputBase);
 				optimized = true;
 			}
 			assignChunkIds(
@@ -254,7 +254,7 @@ export default async function rollup(rawInputOptions: GenericConfigObject): Prom
 
 			await Promise.all(
 				chunks.map(chunk => {
-					const outputChunk = outputBundleWithPlaceholders[chunk.id as string] as OutputChunk;
+					const outputChunk = outputBundleWithPlaceholders[chunk.id!] as OutputChunk;
 					return chunk.render(outputOptions, addons, outputChunk).then(rendered => {
 						outputChunk.code = rendered.code;
 						outputChunk.map = rendered.map;
@@ -279,7 +279,7 @@ export default async function rollup(rawInputOptions: GenericConfigObject): Prom
 
 	const cache = useCache ? graph.getCache() : undefined;
 	const result: RollupBuild = {
-		cache: cache as RollupCache,
+		cache: cache!,
 		generate: ((rawOutputOptions: GenericConfigObject) => {
 			const promise = generate(getOutputOptions(rawOutputOptions), false).then(result =>
 				createOutput(result)
@@ -354,16 +354,17 @@ function getSortingFileType(file: OutputAsset | OutputChunk): SortingFileType {
 
 function createOutput(outputBundle: Record<string, OutputChunk | OutputAsset | {}>): RollupOutput {
 	return {
-		output: (Object.keys(outputBundle)
+		output: Object.keys(outputBundle)
 			.map(fileName => outputBundle[fileName])
-			.filter(outputFile => Object.keys(outputFile).length > 0) as (
-			| OutputChunk
-			| OutputAsset)[]).sort((outputFileA, outputFileB) => {
-			const fileTypeA = getSortingFileType(outputFileA);
-			const fileTypeB = getSortingFileType(outputFileB);
-			if (fileTypeA === fileTypeB) return 0;
-			return fileTypeA < fileTypeB ? -1 : 1;
-		}) as [OutputChunk, ...(OutputChunk | OutputAsset)[]]
+			.filter(
+				(outputFile): outputFile is OutputChunk | OutputAsset => Object.keys(outputFile).length > 0
+			)
+			.sort((outputFileA, outputFileB) => {
+				const fileTypeA = getSortingFileType(outputFileA);
+				const fileTypeB = getSortingFileType(outputFileB);
+				if (fileTypeA === fileTypeB) return 0;
+				return fileTypeA < fileTypeB ? -1 : 1;
+			}) as [OutputChunk, ...(OutputChunk | OutputAsset)[]]
 	};
 }
 
@@ -377,10 +378,7 @@ function writeOutputFile(
 	outputFile: OutputAsset | OutputChunk,
 	outputOptions: OutputOptions
 ): Promise<void> {
-	const fileName = resolve(
-		outputOptions.dir || dirname(outputOptions.file as string),
-		outputFile.fileName
-	);
+	const fileName = resolve(outputOptions.dir || dirname(outputOptions.file!), outputFile.fileName);
 	let writeSourceMapPromise: Promise<void>;
 	let source: string | Buffer;
 	if (isOutputAsset(outputFile)) {
